@@ -1,152 +1,126 @@
-import { useEffect, useState } from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Stacking Plan</title>
+  <style>
+    body { font-family: Arial; margin: 0; padding: 20px; }
+    .layout { display: grid; grid-template-columns: 150px 1fr; gap: 20px; }
+    .floor { padding: 10px; margin-bottom: 6px; background: #ddd; cursor: pointer; text-align: center; border-radius: 8px; }
+    .floor.active { background: #0078ff; color: white; }
+    .card { padding: 12px; border: 1px solid #ccc; margin-bottom: 8px; border-radius: 8px; cursor: pointer; }
+    .modal {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+      display: none; align-items: center; justify-content: center;
+    }
+    .modal-content {
+      background: white; padding: 20px; border-radius: 12px; max-width: 500px; width: 100%;
+    }
+    img { width: 100%; border-radius: 8px; }
+    button { margin: 5px; }
+  </style>
+</head>
+<body>
 
-const sampleData = [
-  {
-    id: "220",
-    floor: 2,
-    suite: "220",
-    rsf: 5000,
-    images: "https://via.placeholder.com/600x400,https://via.placeholder.com/600x401",
-    pdf: "https://example.com/sample.pdf",
-    notes: "5 offices\n12 desks\n1 conference room"
-  },
-  {
-    id: "250",
-    floor: 2,
-    suite: "250",
-    rsf: 6480,
-    images: "https://via.placeholder.com/600x402",
-    pdf: "https://example.com/sample.pdf",
-    notes: "Open plan\nLarge pantry"
-  },
-  {
-    id: "500",
-    floor: 5,
-    suite: "500",
-    rsf: 12000,
-    images: "https://via.placeholder.com/600x403",
-    pdf: "https://example.com/sample.pdf",
-    notes: "Full floor opportunity"
-  },
-  {
-    id: "710",
-    floor: 7,
-    suite: "710",
-    rsf: 3250,
-    images: "https://via.placeholder.com/600x404",
-    pdf: "https://example.com/sample.pdf",
-    notes: "3 offices\n6 desks"
-  },
-  {
-    id: "1100",
-    floor: 11,
-    suite: "1100",
-    rsf: 12000,
-    images: "https://via.placeholder.com/600x405",
-    pdf: "https://example.com/sample.pdf",
-    notes: "Spec suite\nHigh-end finishes"
-  },
-  {
-    id: "1200",
-    floor: 12,
-    suite: "1200",
-    rsf: 12000,
-    images: "https://via.placeholder.com/600x406",
-    pdf: "https://example.com/sample.pdf",
-    notes: "Top floor penthouse suite"
-  }
+<div class="layout">
+  <div id="floors"></div>
+  <div>
+    <h2>Suites</h2>
+    <div id="suites">Select a floor</div>
+  </div>
+</div>
+
+<div id="modal" class="modal">
+  <div class="modal-content">
+    <h3 id="modalTitle"></h3>
+    <div id="modalRSF"></div>
+    <div>
+      <button onclick="prevImage()">◀</button>
+      <button onclick="nextImage()">▶</button>
+    </div>
+    <img id="modalImg" />
+    <pre id="modalNotes"></pre>
+    <a id="modalPDF" target="_blank">Download PDF</a>
+    <br>
+    <button onclick="closeModal()">Close</button>
+  </div>
+</div>
+
+<script>
+const data = [
+  { suite: "220", floor: 2, rsf: 5000, images: ["https://via.placeholder.com/600x400","https://via.placeholder.com/600x401"], pdf: "https://example.com/sample.pdf", notes: "5 offices\n12 desks\n1 conference room" },
+  { suite: "250", floor: 2, rsf: 6480, images: ["https://via.placeholder.com/600x402"], pdf: "https://example.com/sample.pdf", notes: "Open plan\nLarge pantry" },
+  { suite: "500", floor: 5, rsf: 12000, images: ["https://via.placeholder.com/600x403"], pdf: "https://example.com/sample.pdf", notes: "Full floor opportunity" },
+  { suite: "710", floor: 7, rsf: 3250, images: ["https://via.placeholder.com/600x404"], pdf: "https://example.com/sample.pdf", notes: "3 offices\n6 desks" },
+  { suite: "1100", floor: 11, rsf: 12000, images: ["https://via.placeholder.com/600x405"], pdf: "https://example.com/sample.pdf", notes: "Spec suite\nHigh-end finishes" },
+  { suite: "1200", floor: 12, rsf: 12000, images: ["https://via.placeholder.com/600x406"], pdf: "https://example.com/sample.pdf", notes: "Top floor penthouse suite" }
 ];
 
-export default function StackingPlan() {
-  const [selectedFloor, setSelectedFloor] = useState(null);
-  const [selectedSuite, setSelectedSuite] = useState(null);
-  const [imageIndex, setImageIndex] = useState(0);
+let selectedSuite = null;
+let imageIndex = 0;
 
-  const floors = Array.from({ length: 12 }, (_, i) => i + 1).reverse();
+const floorsEl = document.getElementById("floors");
+const suitesEl = document.getElementById("suites");
 
-  const suitesByFloor = (floor) =>
-    sampleData.filter((s) => s.floor === floor);
+const floors = Array.from({length:12}, (_,i)=>12-i);
 
-  const nextImage = () => {
-    if (!selectedSuite) return;
-    const imgs = selectedSuite.images.split(",");
-    setImageIndex((prev) => (prev + 1) % imgs.length);
-  };
+floors.forEach(f => {
+  const div = document.createElement("div");
+  div.className = "floor";
+  div.innerText = "Floor " + f;
+  div.onclick = () => selectFloor(f);
+  floorsEl.appendChild(div);
+});
 
-  const prevImage = () => {
-    if (!selectedSuite) return;
-    const imgs = selectedSuite.images.split(",");
-    setImageIndex((prev) => (prev - 1 + imgs.length) % imgs.length);
-  };
+function selectFloor(floor) {
+  document.querySelectorAll('.floor').forEach(el=>el.classList.remove("active"));
+  floorsEl.children[12-floor].classList.add("active");
 
-  return (
-    <div className="p-6 grid grid-cols-3 gap-6">
-      <div className="col-span-1 space-y-2">
-        {floors.map((floor) => (
-          <div
-            key={floor}
-            onClick={() => setSelectedFloor(floor)}
-            className={`p-3 text-center rounded-xl cursor-pointer ${
-              selectedFloor === floor ? "bg-blue-500 text-white" : "bg-gray-200"
-            }`}
-          >
-            Floor {floor}
-          </div>
-        ))}
-      </div>
+  const suites = data.filter(s=>s.floor===floor);
+  if (!suites.length) {
+    suitesEl.innerHTML = "No availability";
+    return;
+  }
 
-      <div className="col-span-2">
-        <h2 className="text-xl mb-4">Suites</h2>
-        {selectedFloor ? (
-          suitesByFloor(selectedFloor).map((suite) => (
-            <Card key={suite.id} className="mb-2" onClick={() => {
-              setSelectedSuite(suite);
-              setImageIndex(0);
-            }}>
-              <CardContent className="p-4 cursor-pointer">
-                <div>Suite {suite.suite}</div>
-                <div>{suite.rsf.toLocaleString()} RSF</div>
-              </CardContent>
-            </Card>
-          ))
-        ) : (
-          <div>Select a floor</div>
-        )}
-      </div>
-
-      {selectedSuite && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-          <div className="bg-white p-6 rounded-2xl max-w-xl w-full">
-            <h3 className="text-lg mb-2">Suite {selectedSuite.suite}</h3>
-            <div className="mb-2">{selectedSuite.rsf.toLocaleString()} RSF</div>
-
-            <div className="relative">
-              <img
-                src={selectedSuite.images.split(",")[imageIndex]}
-                className="w-full h-auto rounded-xl"
-              />
-              <button onClick={prevImage} className="absolute left-0 top-1/2">◀</button>
-              <button onClick={nextImage} className="absolute right-0 top-1/2">▶</button>
-            </div>
-
-            <div className="mt-4 whitespace-pre-line text-sm">
-              {selectedSuite.notes}
-            </div>
-
-            <div className="mt-4">
-              <a href={selectedSuite.pdf} target="_blank">
-                <Button>Download PDF</Button>
-              </a>
-            </div>
-
-            <div className="mt-4 text-right">
-              <Button onClick={() => setSelectedSuite(null)}>Close</Button>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
+  suitesEl.innerHTML = "";
+  suites.forEach(s=>{
+    const div = document.createElement("div");
+    div.className = "card";
+    div.innerHTML = `<strong>Suite ${s.suite}</strong><br>${s.rsf.toLocaleString()} RSF`;
+    div.onclick = () => openModal(s);
+    suitesEl.appendChild(div);
+  });
 }
+
+function openModal(suite) {
+  selectedSuite = suite;
+  imageIndex = 0;
+
+  document.getElementById("modalTitle").innerText = "Suite " + suite.suite;
+  document.getElementById("modalRSF").innerText = suite.rsf.toLocaleString() + " RSF";
+  document.getElementById("modalImg").src = suite.images[0];
+  document.getElementById("modalNotes").innerText = suite.notes;
+  document.getElementById("modalPDF").href = suite.pdf;
+
+  document.getElementById("modal").style.display = "flex";
+}
+
+function closeModal() {
+  document.getElementById("modal").style.display = "none";
+}
+
+function nextImage() {
+  if (!selectedSuite) return;
+  imageIndex = (imageIndex + 1) % selectedSuite.images.length;
+  document.getElementById("modalImg").src = selectedSuite.images[imageIndex];
+}
+
+function prevImage() {
+  if (!selectedSuite) return;
+  imageIndex = (imageIndex - 1 + selectedSuite.images.length) % selectedSuite.images.length;
+  document.getElementById("modalImg").src = selectedSuite.images[imageIndex];
+}
+</script>
+
+</body>
+</html>

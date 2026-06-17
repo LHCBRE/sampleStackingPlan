@@ -1,0 +1,152 @@
+import { useEffect, useState } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+
+const sampleData = [
+  {
+    id: "220",
+    floor: 2,
+    suite: "220",
+    rsf: 5000,
+    images: "https://via.placeholder.com/600x400,https://via.placeholder.com/600x401",
+    pdf: "https://example.com/sample.pdf",
+    notes: "5 offices\n12 desks\n1 conference room"
+  },
+  {
+    id: "250",
+    floor: 2,
+    suite: "250",
+    rsf: 6480,
+    images: "https://via.placeholder.com/600x402",
+    pdf: "https://example.com/sample.pdf",
+    notes: "Open plan\nLarge pantry"
+  },
+  {
+    id: "500",
+    floor: 5,
+    suite: "500",
+    rsf: 12000,
+    images: "https://via.placeholder.com/600x403",
+    pdf: "https://example.com/sample.pdf",
+    notes: "Full floor opportunity"
+  },
+  {
+    id: "710",
+    floor: 7,
+    suite: "710",
+    rsf: 3250,
+    images: "https://via.placeholder.com/600x404",
+    pdf: "https://example.com/sample.pdf",
+    notes: "3 offices\n6 desks"
+  },
+  {
+    id: "1100",
+    floor: 11,
+    suite: "1100",
+    rsf: 12000,
+    images: "https://via.placeholder.com/600x405",
+    pdf: "https://example.com/sample.pdf",
+    notes: "Spec suite\nHigh-end finishes"
+  },
+  {
+    id: "1200",
+    floor: 12,
+    suite: "1200",
+    rsf: 12000,
+    images: "https://via.placeholder.com/600x406",
+    pdf: "https://example.com/sample.pdf",
+    notes: "Top floor penthouse suite"
+  }
+];
+
+export default function StackingPlan() {
+  const [selectedFloor, setSelectedFloor] = useState(null);
+  const [selectedSuite, setSelectedSuite] = useState(null);
+  const [imageIndex, setImageIndex] = useState(0);
+
+  const floors = Array.from({ length: 12 }, (_, i) => i + 1).reverse();
+
+  const suitesByFloor = (floor) =>
+    sampleData.filter((s) => s.floor === floor);
+
+  const nextImage = () => {
+    if (!selectedSuite) return;
+    const imgs = selectedSuite.images.split(",");
+    setImageIndex((prev) => (prev + 1) % imgs.length);
+  };
+
+  const prevImage = () => {
+    if (!selectedSuite) return;
+    const imgs = selectedSuite.images.split(",");
+    setImageIndex((prev) => (prev - 1 + imgs.length) % imgs.length);
+  };
+
+  return (
+    <div className="p-6 grid grid-cols-3 gap-6">
+      <div className="col-span-1 space-y-2">
+        {floors.map((floor) => (
+          <div
+            key={floor}
+            onClick={() => setSelectedFloor(floor)}
+            className={`p-3 text-center rounded-xl cursor-pointer ${
+              selectedFloor === floor ? "bg-blue-500 text-white" : "bg-gray-200"
+            }`}
+          >
+            Floor {floor}
+          </div>
+        ))}
+      </div>
+
+      <div className="col-span-2">
+        <h2 className="text-xl mb-4">Suites</h2>
+        {selectedFloor ? (
+          suitesByFloor(selectedFloor).map((suite) => (
+            <Card key={suite.id} className="mb-2" onClick={() => {
+              setSelectedSuite(suite);
+              setImageIndex(0);
+            }}>
+              <CardContent className="p-4 cursor-pointer">
+                <div>Suite {suite.suite}</div>
+                <div>{suite.rsf.toLocaleString()} RSF</div>
+              </CardContent>
+            </Card>
+          ))
+        ) : (
+          <div>Select a floor</div>
+        )}
+      </div>
+
+      {selectedSuite && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+          <div className="bg-white p-6 rounded-2xl max-w-xl w-full">
+            <h3 className="text-lg mb-2">Suite {selectedSuite.suite}</h3>
+            <div className="mb-2">{selectedSuite.rsf.toLocaleString()} RSF</div>
+
+            <div className="relative">
+              <img
+                src={selectedSuite.images.split(",")[imageIndex]}
+                className="w-full h-auto rounded-xl"
+              />
+              <button onClick={prevImage} className="absolute left-0 top-1/2">◀</button>
+              <button onClick={nextImage} className="absolute right-0 top-1/2">▶</button>
+            </div>
+
+            <div className="mt-4 whitespace-pre-line text-sm">
+              {selectedSuite.notes}
+            </div>
+
+            <div className="mt-4">
+              <a href={selectedSuite.pdf} target="_blank">
+                <Button>Download PDF</Button>
+              </a>
+            </div>
+
+            <div className="mt-4 text-right">
+              <Button onClick={() => setSelectedSuite(null)}>Close</Button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

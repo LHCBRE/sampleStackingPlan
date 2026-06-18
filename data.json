@@ -1,0 +1,18 @@
+[
+  {
+    "suite": "220",
+    "floor": 2,
+    "rsf": 5000,
+    "images": ["https://via.placeholder.com/600x400","https://via.placeholder.com/600x401"],
+    "pdf": "https://example.com/sample.pdf",
+    "notes": "5 offices\n12 desks\n1 conference room"
+  },
+  {
+    "suite": "250",
+    "floor": 2,
+    "rsf": 6480,
+    "images": ["https://via.placeholder.com/600x402"],
+    "pdf": "https://example.com/sample.pdf",
+    "notes": "Open plan\nLarge pantry"
+  }
+]

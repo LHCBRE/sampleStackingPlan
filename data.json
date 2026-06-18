@@ -15,4 +15,15 @@
     "pdf": "https://example.com/sample.pdf",
     "notes": "Open plan\nLarge pantry"
   }
+
+{
+  "suite": "305",
+  "floor": 3,
+  "rsf": 4200,
+  "images": ["https://via.placeholder.com/600x407"],
+  "pdf": "https://example.com/sample.pdf",
+  "notes": "Test suite"
+}
+
+
 ]

@@ -47,14 +47,15 @@
 </div>
 
 <script>
-const data = [
-  { suite: "220", floor: 2, rsf: 5000, images: ["https://via.placeholder.com/600x400","https://via.placeholder.com/600x401"], pdf: "https://example.com/sample.pdf", notes: "5 offices\n12 desks\n1 conference room" },
-  { suite: "250", floor: 2, rsf: 6480, images: ["https://via.placeholder.com/600x402"], pdf: "https://example.com/sample.pdf", notes: "Open plan\nLarge pantry" },
-  { suite: "500", floor: 5, rsf: 12000, images: ["https://via.placeholder.com/600x403"], pdf: "https://example.com/sample.pdf", notes: "Full floor opportunity" },
-  { suite: "710", floor: 7, rsf: 3250, images: ["https://via.placeholder.com/600x404"], pdf: "https://example.com/sample.pdf", notes: "3 offices\n6 desks" },
-  { suite: "1100", floor: 11, rsf: 12000, images: ["https://via.placeholder.com/600x405"], pdf: "https://example.com/sample.pdf", notes: "Spec suite\nHigh-end finishes" },
-  { suite: "1200", floor: 12, rsf: 12000, images: ["https://via.placeholder.com/600x406"], pdf: "https://example.com/sample.pdf", notes: "Top floor penthouse suite" }
-];
+
+let data = [];
+
+fetch("data.json")
+  .then(res => res.json())
+  .then(json => {
+    data = json;
+  });
+
 
 let selectedSuite = null;
 let imageIndex = 0;
@@ -72,7 +73,15 @@ floors.forEach(f => {
   floorsEl.appendChild(div);
 });
 
+
 function selectFloor(floor) {
+  
+if (!data.length) {
+  suitesEl.innerHTML = "Loading...";
+  return;
+}
+
+
   document.querySelectorAll('.floor').forEach(el=>el.classList.remove("active"));
   floorsEl.children[12-floor].classList.add("active");
 
@@ -81,6 +90,7 @@ function selectFloor(floor) {
     suitesEl.innerHTML = "No availability";
     return;
   }
+
 
   suitesEl.innerHTML = "";
   suites.forEach(s=>{
